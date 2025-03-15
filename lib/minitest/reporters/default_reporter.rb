@@ -92,13 +92,10 @@ module Minitest
       end
 
       def on_report
-        status_line = "Finished tests in %.6fs, %.4f tests/s, %.4f assertions/s." %
-          [total_time, count / total_time, assertions / total_time]
+        status_line = "Finished tests in %.1fs" % [total_time] if count > 1
 
         puts
-        puts
         puts colored_for(suite_result, status_line)
-        puts
 
         unless @fast_fail
           tests.reject(&:passed?).each do |test|
@@ -130,7 +127,6 @@ module Minitest
           end
         end
 
-        puts
         print colored_for(suite_result, result_line)
         puts
       end
@@ -155,7 +151,7 @@ module Minitest
       def relative_path(path)
         Pathname.new(path).relative_path_from(Pathname.new(Dir.getwd))
       end
-      
+
       def get_source_location(result)
         if result.respond_to? :klass
           result.source_location
@@ -228,8 +224,17 @@ module Minitest
       end
 
       def result_line
-        '%d tests, %d assertions, %d failures, %d errors, %d skips' %
-          [count, assertions, failures, errors, skips]
+        content = +""
+        content << '%d test' % [count] if count == 1
+        content << '%d tests' % [count] if count > 1
+        content << ', 0 failures' % [failures] if failures == 0
+        content << ', 1 failure' % [failures] if failures == 1
+        content << ', %d failures' % [failures] if failures > 0
+        content << ', 1 error' % [errors] if errors == 1
+        content << ', %d errors' % [errors] if errors > 1
+        content << ', 1 skip' % [skips] if skips == 1
+        content << ', %d skips' % [skips] if skips > 0
+        content
       end
 
       def suite_duration(suite)
